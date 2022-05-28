@@ -104,9 +104,9 @@
 
                     <h6
                         class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-                        <span>Span-1</span>
+                        <span>Atlas</span>
                         <a class="link-secondary" href="#" aria-label="Add a new report">
-                            <span data-feather="plus-circle" class="align-text-bottom">
+                            <span data-feather="plus-circle" class="align-text-bottom" onclick="resetMainForm1()">
                                 Clear
                             </span>
                         </a>
@@ -130,14 +130,22 @@
                     <ul id='atlas-selector-side-container' class="nav flex-column">
                         <h6
                             class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-                            <span>Span-2</span>
+                            <span>Options</span>
                             <a class="link-secondary" href="#" aria-label="Add a new report">
                                 <span data-feather="plus-circle" class="align-text-bottom">
-                                    Option
+                                    Default
                                 </span>
                             </a>
                         </h6>
                         <ul class="nav flex-column mb-2">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <input type="checkbox" class="form-check-input" id="display-nodes-1"
+                                        onchange="setMainForm1_options()">
+                                    <label class="form-check-label" for="save-info">Display Nodes</label>
+                                </a>
+                                </span>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">
                                     <span data-feather="file-text" class="align-text-bottom">
@@ -160,9 +168,14 @@
                 <div
                     class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Brain Cortex in 3D View</h1>
+                    <form id='main-form-1' style='display: none' action="">
+                        <input type="text" name="brain-area-idx"><br>
+                        <input type="text" name="brain-area-name"><br>
+                        <input type="text" name="brain-area-display-nodes">
+                    </form>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="render()">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="renderBrain()">
                                 Redraw
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary">

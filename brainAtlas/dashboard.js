@@ -65,6 +65,7 @@ d3.csv("./atlas/atlas_table.csv").then((raw) => {
         .text((e) => e.name)
         .on("click", (event, e) => {
             console.log(e);
+            setMainForm1(e);
 
             const target = event.target;
 
@@ -80,6 +81,40 @@ d3.csv("./atlas/atlas_table.csv").then((raw) => {
             ).href = `https://radiopaedia.org/articles/${keyword}`;
         });
 });
+
+const setMainForm1 = (e) => {
+    const { name, idx } = e ? e : { name: "", idx: "" };
+    const form = document.getElementById("main-form-1");
+    form.getElementsByTagName("input")["brain-area-idx"].value = idx;
+    form.getElementsByTagName("input")["brain-area-name"].value = name;
+    renderBrain();
+};
+
+const setMainForm1_options = () => {
+    const form = document.getElementById("main-form-1");
+    const optionDisplayNodes = document.getElementById("display-nodes-1");
+    console.log(optionDisplayNodes.value);
+    form.getElementsByTagName("input")["brain-area-display-nodes"].value =
+        optionDisplayNodes.checked ? "display-nodes" : "";
+
+    renderBrain();
+};
+
+const resetMainForm1 = () => {
+    const form = document.getElementById("main-form-1");
+    form.getElementsByTagName("input")["brain-area-idx"].value = "";
+    form.getElementsByTagName("input")["brain-area-name"].value = "";
+    renderBrain();
+};
+
+const getMainForm1 = () => {
+    const form = document.getElementById("main-form-1");
+    const idx = form.getElementsByTagName("input")["brain-area-idx"].value;
+    const name = form.getElementsByTagName("input")["brain-area-name"].value;
+    const displayNodes =
+        form.getElementsByTagName("input")["brain-area-display-nodes"].value;
+    return { name, idx, displayNodes };
+};
 
 // /* globals Chart:false, feather:false */
 
