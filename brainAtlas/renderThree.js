@@ -79,49 +79,32 @@ const mkGeometry = (vertices) => {
     return geometry;
 };
 
-const mkCamera = (aspect) => {
+const camera = (() => {
     const fov = 45;
-    //   const aspect = width / height;
+    const aspect = 1 / 0.8;
     const near = 1;
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set(150, 200, -150);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     return camera;
-};
+})();
 
-const scene = (() => {
+const mkScene = () => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x001b42);
-    return scene;
-})();
 
-const cube = (() => {
-    const material = new THREE.MeshNormalMaterial();
-    const geometry = new THREE.BoxGeometry(10, 10, 10);
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.y = 0;
-    cube.position.x = 100;
-    cube.position.z = 100;
-    return cube;
-})();
-
-{
-    let color = 0xffffff;
     const intensity = 1;
-    const light = new THREE.AmbientLight(color, intensity);
+    const light = new THREE.AmbientLight(0xffffff, intensity);
 
     scene.add(light);
 
-    color = 0x00ff00;
-    const light1 = new THREE.SpotLight(color);
+    const light1 = new THREE.SpotLight(0x00ff00);
     light1.position.y = 100;
     scene.add(light1);
 
     // const helper1 = new THREE.SpotLightHelper(light1);
     // scene.add(helper1);
-
-    scene.add(cube);
 
     // GRID HELPER
     var size = 200;
@@ -129,9 +112,11 @@ const cube = (() => {
     const gridHelper = new THREE.GridHelper(size, divisions);
     // helper.position.y = -70;
     scene.add(gridHelper);
-}
 
-const mkRenderer = (width, height, camera) => {
+    return scene;
+};
+
+const mkRenderer = (width, height, scene, camera) => {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(devicePixelRatio);
@@ -141,8 +126,40 @@ const mkRenderer = (width, height, camera) => {
     return renderer;
 };
 
+const mkCube = () => {
+    const material = new THREE.MeshNormalMaterial();
+    const geometry = new THREE.BoxGeometry(10, 10, 10);
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.y = 0;
+    cube.position.x = 100;
+    cube.position.z = 100;
+    return cube;
+};
+
+const brainMaterial = new THREE.MeshPhongMaterial({
+    color: "hsl(0,100%,100%)",
+    opacity: 0.3,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+});
+
+// const renderer = mkRenderer(
+//     container.clientWidth,
+//     container.clientWidth * 0.8,
+//     scene,
+//     camera
+// );
+
 const render = async () => {
-    //
+    const dt = new Date().getTime();
+
+    // Init scene
+    const scene = mkScene();
+    const cube = mkCube();
+    scene.add(cube);
+
+    // Init brain
     const cells0 = [];
     await d3.csv("./atlas/cells-0.csv").then((raw) => {
         raw.map((e) => {
@@ -164,43 +181,54 @@ const render = async () => {
     const brainGeometry = mkGeometry(vertices);
     brainGeometry.translate(-45, -50 * 0, -45);
 
-    const material = new THREE.MeshPhongMaterial({
-        color: "hsl(0,100%,100%)",
-        opacity: 0.3,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-    });
-
-    const mesh = new THREE.Mesh(brainGeometry, material);
+    const mesh = new THREE.Mesh(brainGeometry, brainMaterial);
     scene.add(mesh);
 
-    //
-    const ruler = document.getElementById("three-container-1-ruler");
-    ruler.style = "display: block";
-
+    // Init renderer
+    // 1. Display the ruler
+    // 2. Get its size, width and height
+    // 3. Use the size to render the scene
     const container = document.getElementById("three-container-1");
-    const camera = mkCamera(container.clientWidth / container.clientHeight);
+    const ruler = document.getElementById("three-container-1-ruler");
+    ruler.__dt = dt;
+    ruler.style = "display: block";
     const renderer = mkRenderer(
         container.clientWidth,
-        container.clientHeight,
+        container.clientWidth * 0.8,
+        scene,
         camera
     );
-
+    const canvas = container.getElementsByTagName("canvas");
+    console.log("canvas", canvas);
+    for (let i = 1; i < canvas.length; i++) {
+        container.removeChild(canvas[i]);
+    }
+    container.appendChild(renderer.domElement);
     ruler.style = "display: none";
 
-    container.appendChild(renderer.domElement);
     renderer.render(scene, camera);
 
     const animate = () => {
         cube.rotation.z += 0.03;
         cube.rotation.y += 0.02;
 
-        requestAnimationFrame(animate);
+        if (ruler.__dt === dt) {
+            requestAnimationFrame(animate);
+        } else {
+            console.log("Request Animation Frame stops");
+        }
 
         renderer.render(scene, camera);
     };
     animate();
 };
+
+window.addEventListener("resize", render);
+
+// const onResize = () => {
+//     camera.aspect = window.innerWidth / window.innerHeight;
+//     camera.updateProjectionMatrix();
+//     renderer.setSize(window.innerWidth, window.innerHeight);
+// };
 
 render();
