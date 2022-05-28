@@ -281,14 +281,14 @@ const renderBrain = async () => {
         renderer.render(scene, camera);
     }
 
-    const stats = new Stats();
-    stats.domElement.style.position = "absolute";
-    stats.domElement.style.left = container.offsetLeft + "px";
-    stats.domElement.style.top = container.offsetTop + "px";
-    container.appendChild(stats.domElement);
+    // const stats = new Stats();
+    // stats.domElement.style.position = "absolute";
+    // stats.domElement.style.left = container.offsetLeft + "px";
+    // stats.domElement.style.top = container.offsetTop + "px";
+    // container.appendChild(stats.domElement);
 
     const animate = () => {
-        stats.update();
+        // stats.update();
         cube.rotation.z += 0.03;
         cube.rotation.y += 0.02;
 
