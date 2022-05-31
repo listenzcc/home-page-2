@@ -105,7 +105,7 @@
 
             <div class="row align-items-md-stretch">
                 <div class="col-md-6">
-                    <div class="h-100 p-5 text-white bg-dark rounded-3">
+                    <div class="h-100 p-5 text-white bg-dark rounded-3" style="padding: 10px!important">
                         <canvas id="canvas-1" style="width: 100%; height: 100%;"></canvas>
                     </div>
                 </div>
@@ -113,11 +113,6 @@
                     <div id='controller-1' class="h-100 p-5 bg-light border rounded-3">
                         <h2>Toy of GP</h2>
 
-                        <div class="card card-body">
-                            <li>Click the toy to add nodes.</li>
-                            <li>Slide the values to adjust the shape</li>
-                            <li>Click the buttons to reset the nodes</li>
-                        </div>
                         <div>
                             <p style="margin-bottom: 0px; margin-top: 5px">Parameter l (change shape, larger leads to
                                 over-fitting)</p>
@@ -142,6 +137,13 @@
 
                             <button onclick="init()" class="btn btn-secondary" type="button">Reset
                                 points</button>
+                        </div>
+
+                        <p></p>
+                        <div class="card card-body">
+                            <li>Click the toy to add nodes.</li>
+                            <li>Slide the values to adjust the shape</li>
+                            <li>Click the buttons to reset the nodes</li>
                         </div>
                     </div>
                 </div>
