@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.98.0">
+    <title>Gaussian Processes</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.2/examples/jumbotron/">
+
+    <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script type="text/javascript" src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" src="https://unpkg.com/mathjs@10.6.0/lib/browser/math.js"></script>
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+
+        .b-example-divider {
+            height: 3rem;
+            background-color: rgba(0, 0, 0, .1);
+            border: solid rgba(0, 0, 0, .15);
+            border-width: 1px 0;
+            box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+        }
+
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 100vh;
+        }
+
+        .bi {
+            vertical-align: -.125em;
+            fill: currentColor;
+        }
+
+        .nav-scroller {
+            position: relative;
+            z-index: 2;
+            height: 2.75rem;
+            overflow-y: hidden;
+        }
+
+        .nav-scroller .nav {
+            display: flex;
+            flex-wrap: nowrap;
+            padding-bottom: 1rem;
+            margin-top: -1px;
+            overflow-x: auto;
+            text-align: center;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <main>
+        <div class="container py-4">
+            <header class="pb-3 mb-4 border-bottom">
+                <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+                    <img src="../assets/logo.png" height="32" width="32" style="margin-right: 16px" />
+                    <span class="fs-4">Gaussian Processes</span>
+                </a>
+            </header>
+
+            <div class="p-5 mb-4 bg-light rounded-3">
+                <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false"
+                    aria-controls="collapseExample">
+                    <h1 class="fw-bold">Gaussian Processes</h1>
+                </a>
+                <div class="container-fluid collapse" id="collapseExample">
+                    <quote class="col-md-8 fs-4" style="font-style: italic">
+                        The actual science of logic is conversant at present only with things either certain,
+                        impossible, or entirely doubtful, none of which (fortunately) we have to reason on. Therefore
+                        the true logic for this world is the calculus of Probabilities, which takes account of the
+                        magnitude of the probability which is, or ought to be, in a reasonable man’s mind.
+                    </quote>
+                    <br>
+                    <quote class="col-md-8 fs-4" style="float:right; font-style:italic">
+                        — James Clerk Maxwell [1850]
+                    </quote>
+                </div>
+            </div>
+
+            <div class="row align-items-md-stretch">
+                <div class="col-md-6">
+                    <div class="h-100 p-5 text-white bg-dark rounded-3">
+                        <canvas id="canvas-1" style="width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id='controller-1' class="h-100 p-5 bg-light border rounded-3">
+                        <h2>Toy of GP</h2>
+
+                        <div class="card card-body">
+                            <li>Click the toy to add nodes.</li>
+                            <li>Slide the values to adjust the shape</li>
+                            <li>Click the buttons to reset the nodes</li>
+                        </div>
+                        <div>
+                            <p style="margin-bottom: 0px; margin-top: 5px">Parameter l (change shape, larger leads to
+                                over-fitting)</p>
+                            <label class="form-label" id="range-1-label" style="vertical-align: text-bottom">1.0</label>
+                            <input class="form-range" type="range" id='range-1' oninput='redraw()' value='0.3' max='0.5'
+                                min='0.1' step='0.05' />
+                        </div>
+
+                        <div>
+                            <p style="margin-bottom: 0px; margin-top: 5px">Parameter s (change variance, larger leads to
+                                more variance)</p>
+                            <label class="form-label" id="range-2-label" style="vertical-align: text-bottom">1.0</label>
+                            <input class="form-range" type="range" id='range-2' oninput='redraw()' value='1.0' max='5.0'
+                                min='0.1' step='0.1' />
+                        </div>
+
+                        <div>
+                            <p style="margin-bottom: 0px; margin-top: 5px"></p>
+
+                            <button onclick="shuffle()" class="btn btn-secondary" type="button">Shuffle
+                                points</button>
+
+                            <button onclick="init()" class="btn btn-secondary" type="button">Reset
+                                points</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 mb-4 bg-light rounded-3">
+                <h2>Gaussian Processes for Machine Learning</h2>
+                <iframe id='iframe-1' width="100%" height="800px" src="./RW.pdf"></iframe>
+            </div>
+
+            <footer class="pt-3 mt-4 text-muted border-top">
+                &copy; 2022
+            </footer>
+        </div>
+    </main>
+
+    <script type="text/javascript" src="./gaussianProcesses.js"></script>
+    <script type="text/javascript" src="./toy.js"></script>
+    <script type="text/javascript" src="./ui.js"></script>
+
+
+</body>
+
+</html>
