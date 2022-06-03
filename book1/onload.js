@@ -1,3 +1,8 @@
+const myPdf = {
+    url: "./book/CHAPTER-I---FUNDAMENTALS_1964_Mathematical-Theory-of-Probability-and-Statist.pdf",
+    pageIdx: 1,
+};
+
 d3.csv("./index.csv").then((raw) => {
     raw.map((e, i) => (e.idx = i));
     console.log(raw);
@@ -35,11 +40,16 @@ d3.csv("./index.csv").then((raw) => {
         })
         .attr("aria-current", "page")
         .on("click", (event, e) => {
-            console.log(event, e);
-            d3.select("#main-iframe-1").attr(
-                "src",
-                "./book/" + baseName(e.FullName)
-            );
+            console.log(e.idx, e, event, baseName(e.FullName));
+            const url = "./book/" + baseName(e.FullName);
+
+            myPdf.url = url;
+
+            d3.select("#main-iframe-1").attr("src", url);
+            document.getElementById("range-2").value = 1;
+            document.getElementById("range-2-label").innerHTML =
+                url + " Page: 1";
+            renderNewPdf();
 
             a.attr("class", (_, i) => {
                 return i == e.idx ? "nav-link active" : "nav-link";
@@ -51,3 +61,54 @@ d3.csv("./index.csv").then((raw) => {
         .attr("data-feather", "home")
         .text((e) => baseName(e.FullName));
 });
+
+function changePageIdx() {
+    const pageIdx = parseInt(document.getElementById("range-2").value);
+    document.getElementById("range-2-label").innerHTML =
+        myPdf.url + " Page: " + pageIdx;
+
+    myPdf.pageIdx = pageIdx;
+    renderNewPdf();
+}
+
+function renderNewPdf() {
+    const { url, pageIdx } = myPdf;
+    console.log(url, pageIdx);
+
+    var loadingTask = pdfjsLib.getDocument(url);
+
+    loadingTask.promise.then(function (pdf) {
+        // you can now use *pdf* here
+        document.getElementById("range-2").max = pdf.numPages;
+
+        pdf.getPage(pageIdx).then(function (page) {
+            // you can now use *page* here
+            var scale = 1.5;
+            var viewport = page.getViewport({ scale: scale });
+            // Support HiDPI-screens.
+            var outputScale = window.devicePixelRatio || 1;
+
+            var canvas = document.getElementById("canvas-1");
+            var context = canvas.getContext("2d");
+
+            canvas.width = Math.floor(viewport.width * outputScale);
+            canvas.height = Math.floor(viewport.height * outputScale);
+            canvas.style.width = Math.floor(viewport.width) + "px";
+            canvas.style.height = Math.floor(viewport.height) + "px";
+
+            var transform =
+                outputScale !== 1
+                    ? [outputScale, 0, 0, outputScale, 0, 0]
+                    : null;
+
+            var renderContext = {
+                canvasContext: context,
+                transform: transform,
+                viewport: viewport,
+            };
+            page.render(renderContext);
+        });
+    });
+}
+
+renderNewPdf();
