@@ -82,14 +82,22 @@ function renderNewPdf() {
         document.getElementById("range-2").max = pdf.numPages;
 
         pdf.getPage(pageIdx).then(function (page) {
-            // you can now use *page* here
-            var scale = 1.5;
-            var viewport = page.getViewport({ scale: scale });
-            // Support HiDPI-screens.
-            var outputScale = window.devicePixelRatio || 1;
-
             var canvas = document.getElementById("canvas-1");
             var context = canvas.getContext("2d");
+
+            // you can now use *page* here
+            var scale = 1.0;
+            var viewport = page.getViewport({ scale: scale });
+
+            // Rescale the pdf to fit the width of the canvas
+            scale =
+                Math.max(canvas.parentElement.clientWidth, 300) /
+                viewport.width;
+
+            viewport = page.getViewport({ scale: scale });
+
+            // Support HiDPI-screens.
+            var outputScale = window.devicePixelRatio || 1;
 
             canvas.width = Math.floor(viewport.width * outputScale);
             canvas.height = Math.floor(viewport.height * outputScale);
