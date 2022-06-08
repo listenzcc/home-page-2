@@ -49,11 +49,19 @@ d3.csv("./asset/lfp-sex-race-hispanic.csv").then((raw) => {
     function reCompute() {
         const targetName = document.getElementById("selection-1").value;
         const targetSex = document.getElementById("selection-2").value;
-        document.getElementById("range-1-label").innerHTML =
-            document.getElementById("range-1").value;
-        document.getElementById("range-2-label").innerHTML =
-            document.getElementById("range-2").value;
-        compute(data, targetName, targetSex);
+
+        const phi = document.getElementById("range-1")
+            ? parseFloat(document.getElementById("range-1").value)
+            : 1.2;
+
+        const sigma = document.getElementById("range-2")
+            ? parseFloat(document.getElementById("range-2").value)
+            : 1.6;
+
+        document.getElementById("range-1-label").innerHTML = phi;
+        document.getElementById("range-2-label").innerHTML = sigma;
+
+        compute(data, targetName, targetSex, phi, sigma);
     }
 
     drawData(data);
@@ -76,7 +84,7 @@ d3.csv("./asset/lfp-sex-race-hispanic.csv").then((raw) => {
     d3.select("#range-2").on("input", reCompute);
 });
 
-function compute(data, targetName = "asian", targetSex = "w") {
+function compute(data, targetName, targetSex, phi, sigma) {
     const { all, white, black, hispanic, asian } = data;
 
     eval(`var target = ${targetName}`);
@@ -107,10 +115,10 @@ function compute(data, targetName = "asian", targetSex = "w") {
         })
         .filter((e, i) => false || i % 10 === 0);
 
-    const p = gaussianProcesses(x, y, t);
+    const p = gaussianProcesses(x, y, t, phi, sigma);
 
     function _trace(color) {
-        const name = targetName + "-prediction";
+        const name = targetName + "-" + targetSex + "-prediction";
         const y = [];
         for (let i = 0; i < p.mu.size()[0]; i++) {
             y.push(p.mu.subset(math.index(i, 0)));

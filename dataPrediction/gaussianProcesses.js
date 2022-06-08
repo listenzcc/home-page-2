@@ -1,16 +1,8 @@
 // Gaussian Processes Prediction
 // Sample function: y = f(x)
 // Prediction function: ? = f(t)
-function gaussianProcesses(x, y, t) {
+function gaussianProcesses(x, y, t, phi = 1.0, sigma = 1.0) {
     const eps = 0 * 1e-6;
-
-    const phi = document.getElementById("range-1")
-        ? parseFloat(document.getElementById("range-1").value)
-        : 1.2;
-
-    const sigma = document.getElementById("range-2")
-        ? parseFloat(document.getElementById("range-2").value)
-        : 1.6;
 
     // const phi = 0.5,
     //     sigma = 1;
