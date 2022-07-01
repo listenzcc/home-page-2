@@ -70,7 +70,9 @@ function update(a, b) {
     }
 }
 
+var speed = 0;
 const params = {
+    speed: 0,
     color: "#ffffff",
     scale: 4,
     flowX: 1,
@@ -396,6 +398,9 @@ function init() {
 
     const gui = new GUI();
 
+    gui.add(params, "speed", 0, 10).onChange(function (value) {
+        speed = value;
+    });
     gui.addColor(params, "color").onChange(function (value) {
         water.material.uniforms["color"].value.set(value);
     });
@@ -450,7 +455,7 @@ function onWindowResize() {
 function animate() {
     requestAnimationFrame(animate);
 
-    objects.gun12.rotation.y -= 0.01;
+    objects.gun12.rotation.y -= speed * 0.01;
 
     objects.cubeCamera.update(renderer, scene);
 
