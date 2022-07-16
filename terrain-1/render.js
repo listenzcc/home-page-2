@@ -1,28 +1,153 @@
 console.log("The render.js is loaded.");
 
+// Imports
 import * as THREE from "three";
 import Stats from "./jsm/libs/stats.module.js";
 
 import { OrbitControls } from "./jsm/controls/OrbitControls.js";
 import { ImprovedNoise } from "./jsm/math/ImprovedNoise.js";
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-let stats;
+// Single instance
+const scene = new THREE.Scene();
+const stats = new Stats();
 
-let camera, controls, scene;
-
-let mesh, texture;
-
+// Generate terrain
 const worldWidth = 256,
     worldDepth = 256,
     worldHalfWidth = worldWidth / 2,
     worldHalfDepth = worldDepth / 2;
 
-let helper;
-
+const data = generateHeight(worldWidth, worldDepth);
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
+// windows
+function mkScreen(id, ratio, useControls = false, addSphere = true) {
+    //
+    const container = document.getElementById(id);
+    container.style.height = container.clientWidth * ratio;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+    const camera = new THREE.PerspectiveCamera(
+        60,
+        container.clientWidth / container.clientHeight,
+        10,
+        20000
+    );
+
+    //
+    container.appendChild(renderer.domElement);
+
+    //
+    let controls = 0;
+    if (useControls) {
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.minDistance = 1000;
+        controls.maxDistance = 10000;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        //
+        controls.target.y =
+            data[worldHalfWidth + worldHalfDepth * worldWidth] + 500;
+        camera.position.y = controls.target.y + 2000;
+        camera.position.x = 2000;
+        controls.update();
+    }
+
+    //
+    const cameraHelper = new THREE.CameraHelper(camera);
+
+    //
+    const material = new THREE.MeshNormalMaterial();
+    const geometry = new THREE.SphereGeometry(100, 10, 10);
+    const sphere = new THREE.Mesh(geometry, material);
+
+    const changePosition = () => {
+        camera.position.copy(sphere.position);
+    };
+
+    return {
+        container,
+        renderer,
+        camera,
+        cameraHelper,
+        sphere,
+        controls,
+        id,
+        ratio,
+        changePosition,
+    };
+}
+
+const screen2 = mkScreen("scene-2-container", 0.5);
+const screen3 = mkScreen("scene-3-container", 0.5);
+const screen4 = mkScreen("scene-4-container", 0.5);
+
+[screen2, screen3, screen4].map((screen) => {
+    scene.add(screen.sphere);
+    scene.add(screen.cameraHelper);
+});
+
+const screen1 = mkScreen("scene-1-container", 0.8, true);
+
+screen1.camera.position.x = 10000;
+screen1.camera.position.y = 5000;
+screen1.camera.position.z = 5000;
+screen1.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+//
+
+function fillScene() {
+    //
+    scene.background = new THREE.Color(0xbfd1e5);
+
+    //
+    const geometryTerrain = new THREE.PlaneGeometry(
+        7500,
+        7500,
+        worldWidth - 1,
+        worldDepth - 1
+    );
+    geometryTerrain.rotateX(-Math.PI / 2);
+
+    //
+    const vertices = geometryTerrain.attributes.position.array;
+    for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
+        vertices[j + 1] = data[i] * 10;
+    }
+
+    //
+    const texture = new THREE.CanvasTexture(
+        generateTexture(data, worldWidth, worldDepth)
+    );
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+
+    const mesh = new THREE.Mesh(
+        geometryTerrain,
+        new THREE.MeshBasicMaterial({ map: texture })
+    );
+    scene.add(mesh);
+
+    //
+    const geometryHelper = new THREE.ConeGeometry(200, 1000, 3);
+    geometryHelper.translate(0, 50, 0);
+    geometryHelper.rotateX(Math.PI / 2);
+
+    //
+    const surfaceNorm = new THREE.Mesh(
+        geometryHelper,
+        new THREE.MeshNormalMaterial()
+    );
+    scene.add(surfaceNorm);
+
+    return { mesh, texture, surfaceNorm };
+}
+
+const { mesh, surfaceNorm } = fillScene();
+
+//
 init();
 animate();
 
@@ -30,99 +155,105 @@ onWindowResize();
 
 window.addEventListener("resize", onWindowResize);
 
+//
 function onWindowResize() {
-    // Three shots
-    ["scene-2-container", "scene-3-container", "scene-4-container"].map(
-        (id) => {
-            const d = document.getElementById(id);
-            d.style.height = d.clientWidth / 2;
-        }
-    );
+    // Resize screens
+    [screen1, screen2, screen3, screen4].map((screen) => {
+        const { container, renderer, camera, ratio } = screen;
 
-    // Main screen
-    const d1 = document.getElementById("scene-1-container");
-    const d2 = document.getElementById("scene-234-group-container");
-    d1.style.height = d2.clientHeight;
+        // Resize
+        container.style.height = container.clientWidth * ratio;
 
-    // Camera and renderer
-    renderer.setSize(d1.clientWidth, d1.clientHeight);
-    camera.aspect = d1.clientWidth / d1.clientHeight;
-    camera.updateProjectionMatrix();
+        // Update camera and renderer
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+    });
 
-    // Report
     console.log("Window is resized");
 }
 
 function init() {
-    const d1 = document.getElementById("scene-1-container");
-    renderer.setPixelRatio(window.devicePixelRatio);
-    d1.appendChild(renderer.domElement);
+    const { container } = screen1;
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xbfd1e5);
+    container.addEventListener("pointermove", onPointerMove);
 
-    camera = new THREE.PerspectiveCamera(
-        60,
-        d1.clientWidth / d1.clientHeight,
-        10,
-        20000
-    );
+    stats.dom.style.position = "";
+    container.appendChild(stats.dom);
+}
 
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.minDistance = 1000;
-    controls.maxDistance = 10000;
-    controls.maxPolarAngle = Math.PI / 2;
+function animate() {
+    requestAnimationFrame(animate);
 
-    //
+    const time = Date.now() * 0.0005;
 
-    const data = generateHeight(worldWidth, worldDepth);
+    screen2.sphere.position.y = 3000;
+    screen2.sphere.position.x = Math.sin(time * 0.7) * 3000;
+    screen2.sphere.position.z = Math.cos(time * 0.3) * 3000;
+    screen2.changePosition();
 
-    controls.target.y =
-        data[worldHalfWidth + worldHalfDepth * worldWidth] + 500;
-    camera.position.y = controls.target.y + 2000;
-    camera.position.x = 2000;
-    controls.update();
+    screen3.sphere.position.y = 5000;
+    screen3.sphere.position.x = Math.sin(time * 0.2) * 3000;
+    screen3.sphere.position.z = Math.cos(time * 0.4) * 3000;
+    screen3.changePosition();
 
-    const geometry = new THREE.PlaneGeometry(
-        7500,
-        7500,
-        worldWidth - 1,
-        worldDepth - 1
-    );
-    geometry.rotateX(-Math.PI / 2);
+    screen4.sphere.position.y = 4000;
+    screen4.sphere.position.x = Math.sin(time * 0.5) * 3000;
+    screen4.sphere.position.z = Math.cos(time * 0.7) * 3000;
+    screen4.changePosition();
 
-    const vertices = geometry.attributes.position.array;
-
-    for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
-        vertices[j + 1] = data[i] * 10;
+    let bool = true;
+    if (intersects) {
+        if (intersects.length > 0) {
+            screen2.camera.lookAt(intersects[0].point);
+            screen3.camera.lookAt(intersects[0].point);
+            screen4.camera.lookAt(intersects[0].point);
+            bool = false;
+        }
     }
 
-    //
+    if (bool) {
+        screen2.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        screen3.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        screen4.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    }
 
-    texture = new THREE.CanvasTexture(
-        generateTexture(data, worldWidth, worldDepth)
-    );
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
+    render();
 
-    mesh = new THREE.Mesh(
-        geometry,
-        new THREE.MeshBasicMaterial({ map: texture })
-    );
-    scene.add(mesh);
+    stats.update();
+}
 
-    const geometryHelper = new THREE.ConeGeometry(200, 1000, 3);
-    geometryHelper.translate(0, 50, 0);
-    geometryHelper.rotateX(Math.PI / 2);
-    helper = new THREE.Mesh(geometryHelper, new THREE.MeshNormalMaterial());
-    scene.add(helper);
+function render() {
+    screen1.renderer.render(scene, screen1.camera);
+    screen2.renderer.render(scene, screen2.camera);
+    screen3.renderer.render(scene, screen3.camera);
+    screen4.renderer.render(scene, screen4.camera);
+}
 
-    d1.addEventListener("pointermove", onPointerMove);
+var intersects;
 
-    stats = new Stats();
-    stats.dom.style.position = "";
-    console.log(stats);
-    d1.appendChild(stats.dom);
+// Toolbox
+function onPointerMove(event) {
+    pointer.x =
+        (event.offsetX / screen1.renderer.domElement.clientWidth) * 2 - 1;
+    pointer.y =
+        -(event.offsetY / screen1.renderer.domElement.clientHeight) * 2 + 1;
+    raycaster.setFromCamera(pointer, screen1.camera);
+
+    // See if the ray from the camera into the world hits one of our meshes
+    intersects = raycaster.intersectObject(mesh);
+
+    // Toggle rotation bool for meshes that we clicked
+    if (intersects.length > 0) {
+        surfaceNorm.position.set(0, 0, 0);
+        surfaceNorm.position.copy(intersects[0].point);
+        surfaceNorm.lookAt(intersects[0].face.normal);
+
+        // screen2.camera.lookAt(intersects[0].point);
+        // screen3.camera.lookAt(intersects[0].point);
+        // screen4.camera.lookAt(intersects[0].point);
+    }
 }
 
 function generateHeight(width, height) {
@@ -208,34 +339,4 @@ function generateTexture(data, width, height) {
     context.putImageData(image, 0, 0);
 
     return canvasScaled;
-}
-
-//
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    render();
-    stats.update();
-}
-
-function render() {
-    renderer.render(scene, camera);
-}
-
-function onPointerMove(event) {
-    pointer.x = (event.offsetX / renderer.domElement.clientWidth) * 2 - 1;
-    pointer.y = -(event.offsetY / renderer.domElement.clientHeight) * 2 + 1;
-    raycaster.setFromCamera(pointer, camera);
-
-    // See if the ray from the camera into the world hits one of our meshes
-    const intersects = raycaster.intersectObject(mesh);
-
-    // Toggle rotation bool for meshes that we clicked
-    if (intersects.length > 0) {
-        helper.position.set(0, 0, 0);
-        helper.lookAt(intersects[0].face.normal);
-
-        helper.position.copy(intersects[0].point);
-    }
 }

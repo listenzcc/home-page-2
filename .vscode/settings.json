@@ -3,6 +3,8 @@
         "dashdot",
         "fillcolor",
         "legendgroup",
+        "perlin",
+        "raycaster",
         "showlegend"
     ]
 }
