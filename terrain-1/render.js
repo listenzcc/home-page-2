@@ -132,7 +132,7 @@ function fillScene() {
 
     //
     const geometryHelper = new THREE.ConeGeometry(200, 1000, 3);
-    geometryHelper.translate(0, 50, 0);
+    geometryHelper.translate(0, -500, 0);
     geometryHelper.rotateX(Math.PI / 2);
 
     //
