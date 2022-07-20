@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<header>
+    <title>Unicodes</title>
+    <script type="text/javascript" src="../assets/d3.v7.min.js"></script>
+
+    <link rel="stylesheet" href="./woff.css" />
+
+    <style type="text/css">
+        div.flex-container {
+            margin: 1em;
+            display: flex;
+            width: 65em;
+            flex-wrap: wrap;
+            border-top: 2px solid blueviolet;
+        }
+
+        div.controller-container {
+            margin: 1em;
+        }
+
+        div.preview-container {
+            margin: 1em;
+        }
+
+        div.unicode-block {
+            margin: 0.5em;
+            width: 3em;
+        }
+
+        div.unicode-block:hover {
+            background-color: aquamarine
+        }
+
+        div.unicode-character {
+            font-size: x-large;
+            text-align: center;
+        }
+
+        div.unicode-code {
+            font-style: italic;
+            font-size: small;
+            color: gray
+        }
+    </style>
+</header>
+
+<body>
+    <div>
+        <h1>Unicode characters</h1>
+    </div>
+    <div>
+        <div class="controller-container">
+            <span>0x</span>
+            <input id='input-1' type="text" placeholder="0000">
+            <input id='input-1-btn-1' type="button" value="<<" />
+            <input id='input-1-btn-3' type="button" value="Rnd" />
+            <input id='input-1-btn-2' type="button" value=">>" />
+        </div>
+        <div id="preview-container"></div>
+        <div id="container-1"></div>
+    </div>
+    <div style="display: flex; height: 800px; width: 300px; top: 50px; right: 50px; position: absolute;">
+        <iframe id="iframe-1" src="https://unicode-table.com/en/272F/"></iframe>
+    </div>
+
+    <script type="text/javascript" src="./after.js"></script>
+
+</body>
+
+</html>

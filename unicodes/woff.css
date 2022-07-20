@@ -1,0 +1,47 @@
+@font-face {
+    font-family: yolq;
+    src: url("./Branda-yolq.ttf");
+    font-weight: 400;
+    font-display: "auto";
+    font-style: normal;
+}
+
+@font-face {
+    font-family: u1400;
+    src: url("./u1400.woff") format("woff");
+    font-weight: 400;
+    font-display: "auto";
+    font-style: normal;
+}
+
+@font-face {
+    font-family: u1c00;
+    src: url("./u1c00.woff") format("woff");
+    font-weight: 400;
+    font-display: "auto";
+    font-style: normal;
+}
+
+@font-face {
+    font-family: u1800;
+    src: url("./u1800.woff") format("woff");
+    font-weight: 400;
+    font-display: "auto";
+    font-style: normal;
+}
+
+@font-face {
+    font-family: u2800;
+    src: url("./u2800.woff") format("woff");
+    font-weight: 400;
+    font-display: "auto";
+    font-style: normal;
+}
+
+@font-face {
+    font-family: ufc00;
+    src: url("./ufc00.woff") format("woff");
+    font-weight: 400;
+    font-display: "auto";
+    font-style: normal;
+}
